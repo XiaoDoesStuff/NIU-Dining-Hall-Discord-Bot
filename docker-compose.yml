@@ -7,6 +7,13 @@ services:
       - 8.8.8.8
       - 1.1.1.1
     volumes:
-      - {Location of NIU-Dining-Hall-Discord-Bot folder}:/app
+      - /mnt/Docker_Apps/NIU-Dining-Hall-Discord-Bot:/app
     environment:
-      - DINING_BOT_TOKEN={YOUR BOT TOKEN}
+      - DINING_BOT_TOKEN=
+      - CHANNEL= 
+      - CHECK_PATTERSON_LUNCH=
+      - CHECK_PATTERSON_DINNER=
+      - CHECK_NEPTUNE_LUNCH=
+      - CHECK_NEPTUNE_DINNER=
+      - WHEN_TO_CHECK=
+      - KEYWORDSTOCHECK=
