@@ -16,22 +16,37 @@ const client = new Client({
 });
 
 // ------------------------------------------------------------
-// Config
+// Config - pulls from docker-compose.yml
 // ------------------------------------------------------------
-const ALERT_CHANNEL = "1462718308712321116";   // rename as needed
-const KEYWORDS = ["chiliS"]; // empty by default — add whatever you want
-const TOKEN = process.env.DINING_BOT_TOKEN;    // rename env var if desired
+const ALERT_CHANNEL = process.env.CHANNEL;
+const TOKEN = process.env.DINING_BOT_TOKEN;
+const Check_Time = parseInt(process.env.WHEN_TO_CHECK);
+const PATTERSONLUNCHCHECK = process.env.CHECK_PATTERSON_LUNCH;
+const NEPTUNELUNCHCHECK = process.env.CHECK_NEPTUNE_LUNCH;
+const PATTERSONDINNERCHECK = process.env.CHECK_PATTERSON_DINNER;
+const NEPTUNEDINNERHCHECK = process.env.CHECK_NEPTUNE_DINNER;
+
+let KEYWORDS = [];
+
+if (process.env.KEYWORDSTOCHECK) {
+    try {
+        KEYWORDS = JSON.parse(process.env.KEYWORDSTOCHECK);
+    } catch (e) {
+        console.error("Failed to parse KEYWORDS env var as JSON:", e);
+    }
+}
 
 // ------------------------------------------------------------
-// Extract Today's Menu HTML via Puppeteer
+// Extract HTML from today's Menu for a certain dining hall and meal using via Puppeteer
 // ------------------------------------------------------------
-async function getTodayMenuHTML() {
+async function getMenuHTML(hall, meal) {
     const browser = await puppeteer.launch({
         headless: true,
         args: ["--no-sandbox", "--disable-setuid-sandbox"]
     });
 
     const page = await browser.newPage();
+
     await page.setUserAgent(
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
         "AppleWebKit/537.36 (KHTML, like Gecko) " +
@@ -42,26 +57,26 @@ async function getTodayMenuHTML() {
         waitUntil: "networkidle2"
     });
 
-    await page.evaluate(() => {
+    await page.evaluate((hall) => {
         const link = [...document.querySelectorAll("a")]
-            .find(a => a.textContent.includes("Neptune Dining"));
+            .find(a => a.textContent.includes(`${hall} Dining`));
         if (link) link.click();
-    });
+    }, hall);
 
-    await page.waitForFunction(() => {
+    await page.waitForFunction((hall) => {
         return [...document.querySelectorAll("a")]
-            .some(a => a.textContent.includes("Neptune Daily Menu"));
-    }, { timeout: 20000 });
+            .some(a => a.textContent.includes(`${hall} Daily Menu`));
+    }, { timeout: 20000 }, hall);
 
-    await page.evaluate(() => {
+    await page.evaluate((hall) => {
         const link = [...document.querySelectorAll("a")]
-            .find(a => a.textContent.includes("Neptune Daily Menu"));
+            .find(a => a.textContent.includes(`${hall} Daily Menu`));
         if (link) link.click();
-    });
+    }, hall);
 
-    await page.waitForFunction(() => {
-        return document.body.innerText.includes("Menus for Neptune Daily Menu");
-    }, { timeout: 20000 });
+    await page.waitForFunction((hall) => {
+        return document.body.innerText.includes(`Menus for ${hall} Daily Menu`);
+    }, { timeout: 20000 }, hall);
 
     await new Promise(r => setTimeout(r, 300));
 
@@ -74,9 +89,10 @@ async function getTodayMenuHTML() {
         month: "long",
         day: "numeric"
     };
+
     formattedDate = today.toLocaleDateString("en-US", options);
 
-    await page.evaluate((targetDate) => {
+    await page.evaluate((targetDate, meal) => {
         const dateRows = document.querySelectorAll(
             "tr.cbo_nn_menuPrimaryRow, tr.cbo_nn_menuAlternateRow"
         );
@@ -94,13 +110,15 @@ async function getTodayMenuHTML() {
                 const links = mealRow.querySelectorAll("a.cbo_nn_menuLink");
                 if (links.length === 0) return;
 
-                const lunchLink = [...links].find(a => a.textContent.includes("Lunch"));
-                if (lunchLink) lunchLink.click();
+                const mealLink = [...links].find(a =>
+                    a.textContent.includes(meal)
+                );
 
+                if (mealLink) mealLink.click();
                 return;
             }
         }
-    }, formattedDate);
+    }, formattedDate, meal);
 
     await page.waitForFunction(() => {
         const p = document.querySelector("#itemPanel");
@@ -114,9 +132,9 @@ async function getTodayMenuHTML() {
 }
 
 // ------------------------------------------------------------
-// Keyword Detection (formerly shrimp detection)
+// Keyword Detection
 // ------------------------------------------------------------
-function detectKeywords(html) {
+function detectKeywords(html, hall, meal) {
     const $ = cheerio.load(html);
     const items = [];
 
@@ -134,7 +152,7 @@ function detectKeywords(html) {
         });
     });
 
-    console.log(`${formattedDate}'s menu was checked`);
+    console.log(`${formattedDate}'s ${hall} ${meal} menu was checked`);
     console.log("=== PARSED ITEMS ===");
     console.log(items);
     console.log("====================");
@@ -146,15 +164,23 @@ function detectKeywords(html) {
     );
 }
 
+
 // ------------------------------------------------------------
 // Send Alert
 // ------------------------------------------------------------
-async function sendAlert(found) {
+async function sendAlert(found, date, hall, meal) {
     try {
         const channel = await client.channels.fetch(ALERT_CHANNEL);
 
         await channel.send({
-            content: `Menu Alert: Found items matching your keywords: ${found.join(", ")}`
+            content: [
+                `Menu Alert for **${hall}'s ${meal}**`,
+                `Date: **${date}**`,
+                ``,
+                `Matched items: ${found.join(", ")}`,
+                ``,
+                ``,
+            ].join("\n")
         });
 
     } catch (err) {
@@ -163,22 +189,23 @@ async function sendAlert(found) {
 }
 
 // ------------------------------------------------------------
-// Main Check
+// Main Check - begins the check of the menu by requesting the html then parsing the html.
 // ------------------------------------------------------------
-async function checkMenu() {
-    console.log("Menu bot: checking menu…");
+async function checkMenu(hall, meal) {
+    console.log(`Menu bot: checking menu of ${hall} for today's ${meal}`);
 
-    const html = await getTodayMenuHTML();
+    const html = await getMenuHTML(hall, meal);
+
     if (!html) {
         console.log("Menu bot: failed to load menu HTML");
         return;
     }
 
-    const found = detectKeywords(html);
+    const found = detectKeywords(html, hall, meal);
 
     if (found.length > 0) {
         console.log("Menu bot: matches detected:", found);
-        await sendAlert(found);
+        await sendAlert(found, formattedDate, hall, meal);
     } else {
         console.log("Menu bot: no matches today.");
     }
@@ -187,15 +214,15 @@ async function checkMenu() {
 // ------------------------------------------------------------
 // Daily Scheduling
 // ------------------------------------------------------------
-function scheduleDaily8AM(task) {
-    function msUntilNext8AM() {
+function scheduleDaily(task) {
+    function msUntilNext() {
         const now = new Date();
         const chicagoNow = new Date(
             now.toLocaleString("en-US", { timeZone: "America/Chicago" })
         );
 
         const next = new Date(chicagoNow);
-        next.setHours(8, 0, 0, 0);
+        next.setHours(Check_Time, 0, 0, 0);
 
         if (next <= chicagoNow) {
             next.setDate(next.getDate() + 1);
@@ -207,17 +234,48 @@ function scheduleDaily8AM(task) {
     setTimeout(() => {
         task();
         setInterval(task, 24 * 60 * 60 * 1000);
-    }, msUntilNext8AM());
+    }, msUntilNext());
 }
 
 // ------------------------------------------------------------
-// Startup
+// Startup - On startup, do an Initial check, then every day at given time in Chicago Time, run the check again.
 // ------------------------------------------------------------
 client.once("clientReady", async () => {
     console.log(`Menu bot ready as ${client.user.tag}`);
-    await checkMenu();
-    scheduleDaily8AM(async () => {
-        await checkMenu();
+
+    if (NEPTUNELUNCHCHECK == "1") {
+        await checkMenu("Neptune", "Lunch");
+    }
+
+    if (NEPTUNEDINNERHCHECK == "1") {
+        await checkMenu("Neptune", "Dinner");
+    }
+
+    if (PATTERSONLUNCHCHECK == "1") {
+        await checkMenu("Neptune", "Lunch");
+    }
+
+    if (PATTERSONDINNERCHECK == "1") {
+        await checkMenu("Patterson", "Dinner");
+    }
+
+    scheduleDaily(async () => {
+     if (NEPTUNELUNCHCHECK == "1") {
+        await checkMenu("Neptune", "Lunch");
+    }
+
+    if (NEPTUNEDINNERHCHECK == "1") {
+        await checkMenu("Neptune", "Dinner");
+    }
+
+    if (PATTERSONLUNCHCHECK == "1") {
+        await checkMenu("Neptune", "Lunch");
+    }
+
+    if (PATTERSONDINNERCHECK == "1") {
+        await checkMenu("Patterson", "Dinner");
+    }
+;
     });
 });
 
