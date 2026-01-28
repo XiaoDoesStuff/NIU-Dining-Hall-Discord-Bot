@@ -33,11 +33,15 @@ RUN apt-get update && apt-get install -y \
     libxrender1 \
     libxss1 \
     libxtst6 \
-    && rm -rf /var/lib/apt/lists/* \
+    wget \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm install discord.js axios cheerio puppeteer
+
+RUN npm install \
+    && npm install discord.js axios cheerio puppeteer
 
 COPY . .
+
 CMD ["./start.sh"]
