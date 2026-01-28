@@ -19,8 +19,8 @@ const client = new Client({
 // Config
 // ------------------------------------------------------------
 const ALERT_CHANNEL = "1462718308712321116";   // rename as needed
-const KEYWORDS = []; // empty by default — add whatever you want
-const TOKEN = process.env.SHRIMP_BOT_TOKEN;    // rename env var if desired
+const KEYWORDS = ["chiliS"]; // empty by default — add whatever you want
+const TOKEN = process.env.DINING_BOT_TOKEN;    // rename env var if desired
 
 // ------------------------------------------------------------
 // Extract Today's Menu HTML via Puppeteer
