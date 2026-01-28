@@ -39,9 +39,10 @@ RUN apt-get update && apt-get install -y \
 WORKDIR /app
 COPY package*.json ./
 
-RUN npm install \
-    && npm install discord.js axios cheerio puppeteer
+RUN npm install
+
 
 COPY . .
-
+RUN chmod +x ./start.sh
 CMD ["./start.sh"]
+
