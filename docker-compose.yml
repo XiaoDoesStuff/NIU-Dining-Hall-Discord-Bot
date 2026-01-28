@@ -1,0 +1,12 @@
+services:
+  niu-dining-hall-discord-bot:
+    build: .
+    container_name: niu-dining-hall-discord-bot
+    restart: unless-stopped
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    volumes:
+      - {Location of NIU-Dining-Hall-Discord-Bot folder}:/app
+    environment:
+      - DINING_BOT_TOKEN={YOUR BOT TOKEN}
