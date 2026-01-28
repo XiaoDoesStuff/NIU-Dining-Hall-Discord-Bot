@@ -9,3 +9,6 @@ A configurable Docker-based service that sends Discord notifications when NIU di
  
 
 # Config
+
+
+npm install discord.js axios cheerio puppeteer
