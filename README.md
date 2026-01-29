@@ -21,14 +21,14 @@ This bot can be setup and used either with Docker or directly on host.
 # Setup (Docker)
 0. Prereqs:
     - Docker
-    - Nodejs
+    - Nodejs version >= 20
 1. Clone the repo - `git clone https://github.com/XiaoDoesStuff/NIU-Dining-Hall-Discord-Bot.git`
 2. go to the folder `cd NIU-Dining-Hall-Discord-Bot`
 3. Configure Config.env - See below
 4. Use docker compose `sudo docker compose up -d --build`  The Dockerfile will:
-  - Run apt-get update and  Install Chromium and Chromium extensions needed inside the container for puppeteer
-  - Insall the npm packages needed inside the container
-  - Run the start.sh which runs the javascript bot
+   - Run apt-get update and  Install Chromium and Chromium extensions needed inside the container for puppeteer
+   - Insall the npm packages needed inside the container
+   - Run the start.sh which runs the javascript bot
 5. Check logs `sudo docker compose logs -f`
 
 # Setup (Directly on host)
@@ -38,9 +38,9 @@ This bot can be setup and used either with Docker or directly on host.
 2. go to the folder `cd NIU-Dining-Hall-Discord-Bot`
 3. Configure Config.env - See below
 4. Run the Initial-setup.sh - `sudo bash Initial-setup.sh` With sudo permissions, Initial-setup.sh Will
-  - Run apt-get update and install neccessary Chromium and Chromium extensions needed onto the machine for puppeteer
-  - Will insall the npm packages needed
-  - Run the start.sh which runs the javascript bot
+    - Run apt-get update and install neccessary Chromium and Chromium extensions needed onto the machine for puppeteer
+    - Will insall the npm packages needed
+    - Run the start.sh which runs the javascript bot
 5. on subsequent runs, use start.sh - `bash start.sh`
 
 
