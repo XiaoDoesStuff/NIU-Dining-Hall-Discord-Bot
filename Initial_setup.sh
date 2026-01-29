@@ -31,4 +31,5 @@ apt-get update && apt-get install -y \
     libxtst6 \
     wget \
 
+npm install
 bash ./start.sh
