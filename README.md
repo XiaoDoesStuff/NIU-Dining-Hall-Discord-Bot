@@ -61,5 +61,3 @@ A configurable Docker-based service that sends Discord notifications when NIU di
 | WHEN_TO_CHECK                | 8   — Will scan the menu and alert you at 8 AM             |
 | KEYWORDSTOCHECK              | ["pizza", "fries"] — looks for pizza and fires in menus    |
 
-
-npm install discord.js axios cheerio puppeteer
