@@ -1,5 +1,7 @@
 # NIU-Dining-Hall-Discord-Bot
-A configurable Docker-based service that sends Discord notifications when NIU dining halls offer a specified food item.
+A configurable Discord bot that sends Discord notifications to specific Discord channels when NIU dining halls offer a specified food item.
+
+This bot can be setup and used either with Docker or directly on host. 
 
 ## This Discord bot had AI involved in creation:
 - AI created the Docker container itself:
@@ -13,21 +15,33 @@ A configurable Docker-based service that sends Discord notifications when NIU di
 - Why was AI used?
   - I am not a coder. I am a Math Major. I like logic puzzles, but I do not know libraries, syntax, etc.
   - My friends who could have helped seemed busy.
-  - 
-# Setup
+
+
+
+# Setup (Docker)
 0. Prereqs:
     - Docker
-    - Linux
     - Nodejs
-
-  
 1. Clone the repo - `git clone https://github.com/XiaoDoesStuff/NIU-Dining-Hall-Discord-Bot.git`
 2. go to the folder `cd NIU-Dining-Hall-Discord-Bot`
-3. install npm dependancies `npm install discord.js axios cheerio puppeteer`
-4. Configure docker-compose.yml - See below
-5. Use docker compose `sudo docker compose up -d --build`
-6. Check logs `sudo docker compose logs -f`
+3. Configure Config.env - See below
+4. Use docker compose `sudo docker compose up -d --build`  The Dockerfile will:
+  - Run apt-get update and  Install Chromium and Chromium extensions needed inside the container for puppeteer
+  - Insall the npm packages needed inside the container
+  - Run the start.sh which runs the javascript bot
+5. Check logs `sudo docker compose logs -f`
 
+# Setup (Directly on host)
+0. Prereqs:
+    - Nodejs version >= 20
+1. Clone the repo - `git clone https://github.com/XiaoDoesStuff/NIU-Dining-Hall-Discord-Bot.git`
+2. go to the folder `cd NIU-Dining-Hall-Discord-Bot`
+3. Configure Config.env - See below
+4. Run the Initial-setup.sh - `sudo bash Initial-setup.sh` With sudo permissions, Initial-setup.sh Will
+  - Run apt-get update and install neccessary Chromium and Chromium extensions needed onto the machine for puppeteer
+  - Will insall the npm packages needed
+  - Run the start.sh which runs the javascript bot
+5. on subsequent runs, use start.sh - `bash start.sh`
 
 
 # Config
@@ -45,7 +59,7 @@ A configurable Docker-based service that sends Discord notifications when NIU di
 | WHEN_TO_CHECK                 | Set to an hour integer in military time                                  |
 | KEYWORDSTOCHECK               | Set to a collection of keywords used to scan the menus (lowercase only)  |
 
-### Example `docker-compose.yml` configuration
+### Example Config.env configuration
 
 
 | Environment Variable         | Example Value / Meaning                                    |
