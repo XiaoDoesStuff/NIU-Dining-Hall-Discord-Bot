@@ -21,6 +21,8 @@ const client = new Client({
 const ALERT_CHANNEL = process.env.CHANNEL;
 const TOKEN = process.env.DINING_BOT_TOKEN;
 const Check_Time = parseInt(process.env.WHEN_TO_CHECK);
+const PATTERSONBREAKFASTCHECK = process.env.CHECK_PATTERSON_BREAKFAST;
+const NEPTUNEBREAKFASTCHECK = process.env.CHECK_NEPTUNE_BREAKFAST;
 const PATTERSONLUNCHCHECK = process.env.CHECK_PATTERSON_LUNCH;
 const NEPTUNELUNCHCHECK = process.env.CHECK_NEPTUNE_LUNCH;
 const PATTERSONDINNERCHECK = process.env.CHECK_PATTERSON_DINNER;
@@ -37,98 +39,110 @@ if (process.env.KEYWORDSTOCHECK) {
 }
 
 // ------------------------------------------------------------
-// Extract HTML from today's Menu for a certain dining hall and meal using via Puppeteer
+// Extract HTML from today's Menu for a certain dining hall and meal via Puppeteer
 // ------------------------------------------------------------
 async function getMenuHTML(hall, meal) {
-    const browser = await puppeteer.launch({
-        headless: true,
-        args: ["--no-sandbox", "--disable-setuid-sandbox"]
-    });
+    try {
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ["--no-sandbox", "--disable-setuid-sandbox"]
+        });
 
-    const page = await browser.newPage();
+        const page = await browser.newPage();
 
-    await page.setUserAgent(
-        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
-        "AppleWebKit/537.36 (KHTML, like Gecko) " +
-        "Chrome/120.0.0.0 Safari/537.36"
-    );
-
-    await page.goto("https://saapps.niu.edu/NetNutrition/menus", {
-        waitUntil: "networkidle2"
-    });
-
-    await page.evaluate((hall) => {
-        const link = [...document.querySelectorAll("a")]
-            .find(a => a.textContent.includes(`${hall} Dining`));
-        if (link) link.click();
-    }, hall);
-
-    await page.waitForFunction((hall) => {
-        return [...document.querySelectorAll("a")]
-            .some(a => a.textContent.includes(`${hall} Daily Menu`));
-    }, { timeout: 20000 }, hall);
-
-    await page.evaluate((hall) => {
-        const link = [...document.querySelectorAll("a")]
-            .find(a => a.textContent.includes(`${hall} Daily Menu`));
-        if (link) link.click();
-    }, hall);
-
-    await page.waitForFunction((hall) => {
-        return document.body.innerText.includes(`Menus for ${hall} Daily Menu`);
-    }, { timeout: 20000 }, hall);
-
-    await new Promise(r => setTimeout(r, 300));
-
-    await page.waitForSelector("table.cbo_nn_menuTable", { timeout: 20000 });
-
-    const today = new Date();
-    const options = {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-    };
-
-    formattedDate = today.toLocaleDateString("en-US", options);
-
-    await page.evaluate((targetDate, meal) => {
-        const dateRows = document.querySelectorAll(
-            "tr.cbo_nn_menuPrimaryRow, tr.cbo_nn_menuAlternateRow"
+        await page.setUserAgent(
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) " +
+            "AppleWebKit/537.36 (KHTML, like Gecko) " +
+            "Chrome/120.0.0.0 Safari/537.36"
         );
 
-        for (const row of dateRows) {
-            const dateCell = row.querySelector("td");
-            if (!dateCell) continue;
+        await page.goto("https://saapps.niu.edu/NetNutrition/menus", {
+            waitUntil: "networkidle2"
+        });
 
-            const dateText = dateCell.textContent.trim();
+        await page.evaluate((hall) => {
+            const link = [...document.querySelectorAll("a")]
+                .find(a => a.textContent.includes(`${hall} Dining`));
+            if (link) link.click();
+        }, hall);
 
-            if (dateText.includes(targetDate)) {
-                const mealRow = row.nextElementSibling;
-                if (!mealRow) return;
+        await page.waitForFunction((hall) => {
+            return [...document.querySelectorAll("a")]
+                .some(a => a.textContent.includes(`${hall} Daily Menu`));
+        }, { timeout: 20000 }, hall);
 
-                const links = mealRow.querySelectorAll("a.cbo_nn_menuLink");
-                if (links.length === 0) return;
+        await page.evaluate((hall) => {
+            const link = [...document.querySelectorAll("a")]
+                .find(a => a.textContent.includes(`${hall} Daily Menu`));
+            if (link) link.click();
+        }, hall);
 
-                const mealLink = [...links].find(a =>
-                    a.textContent.includes(meal)
-                );
+        await page.waitForFunction((hall) => {
+            return document.body.innerText.includes(`Menus for ${hall} Daily Menu`);
+        }, { timeout: 20000 }, hall);
 
-                if (mealLink) mealLink.click();
-                return;
+        await new Promise(r => setTimeout(r, 300));
+
+        await page.waitForSelector("table.cbo_nn_menuTable", { timeout: 20000 });
+
+        const today = new Date(
+            new Date().toLocaleString("en-US", { timeZone: "America/Chicago" })
+        );
+
+        const options = {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric"
+        };
+
+        formattedDate = today.toLocaleDateString("en-US", options);
+
+        await page.evaluate((targetDate, meal) => {
+            const dateRows = document.querySelectorAll(
+                "tr.cbo_nn_menuPrimaryRow, tr.cbo_nn_menuAlternateRow"
+            );
+
+            for (const row of dateRows) {
+                const dateCell = row.querySelector("td");
+                if (!dateCell) continue;
+
+                const dateText = dateCell.textContent.trim();
+
+                if (dateText.includes(targetDate)) {
+                    const previousRow = row.previousElementSibling;
+                    if (!previousRow) return;
+
+                    const mealRow = previousRow.nextElementSibling;
+                    if (!mealRow) return;
+
+                    const links = mealRow.querySelectorAll("a.cbo_nn_menuLink");
+                    if (links.length === 0) return;
+
+                    const mealLink = [...links].find(a =>
+                        a.textContent.includes(meal)
+                    );
+
+                    if (mealLink) mealLink.click();
+                    return;
+                }
             }
-        }
-    }, formattedDate, meal);
+        }, formattedDate, meal);
 
-    await page.waitForFunction(() => {
-        const p = document.querySelector("#itemPanel");
-        return p && p.style.visibility === "visible";
-    }, { timeout: 20000 });
+        await page.waitForFunction(() => {
+            const p = document.querySelector("#itemPanel");
+            return p && p.style.visibility === "visible";
+        }, { timeout: 20000 });
 
-    const fullHTML = await page.$eval("#itemPanel", el => el.innerHTML);
+        const fullHTML = await page.$eval("#itemPanel", el => el.innerHTML);
 
-    await browser.close();
-    return fullHTML;
+        await browser.close();
+        return fullHTML;
+
+    } catch (err) {
+        console.log(`Timeout — exiting function. ${meal} for ${hall} cannot be found today`);
+        return;
+    }
 }
 
 // ------------------------------------------------------------
@@ -164,7 +178,6 @@ function detectKeywords(html, hall, meal) {
     );
 }
 
-
 // ------------------------------------------------------------
 // Send Alert
 // ------------------------------------------------------------
@@ -174,12 +187,11 @@ async function sendAlert(found, date, hall, meal) {
 
         await channel.send({
             content: [
+                "",
                 `Menu Alert for **${hall}'s ${meal}**`,
                 `Date: **${date}**`,
-                ``,
                 `Matched items: ${found.join(", ")}`,
-                ``,
-                ``,
+                "..."
             ].join("\n")
         });
 
@@ -189,7 +201,7 @@ async function sendAlert(found, date, hall, meal) {
 }
 
 // ------------------------------------------------------------
-// Main Check - begins the check of the menu by requesting the html then parsing the html.
+// Main Check
 // ------------------------------------------------------------
 async function checkMenu(hall, meal) {
     console.log(`Menu bot: checking menu of ${hall} for today's ${meal}`);
@@ -238,10 +250,14 @@ function scheduleDaily(task) {
 }
 
 // ------------------------------------------------------------
-// Startup - On startup, do an Initial check, then every day at given time in Chicago Time, run the check again.
+// Startup
 // ------------------------------------------------------------
 client.once("clientReady", async () => {
     console.log(`Menu bot ready as ${client.user.tag}`);
+
+    if (NEPTUNEBREAKFASTCHECK == "1") {
+        await checkMenu("Neptune", "Breakfast");
+    }
 
     if (NEPTUNELUNCHCHECK == "1") {
         await checkMenu("Neptune", "Lunch");
@@ -251,8 +267,12 @@ client.once("clientReady", async () => {
         await checkMenu("Neptune", "Dinner");
     }
 
+    if (PATTERSONBREAKFASTCHECK == "1") {
+        await checkMenu("Patterson", "Breakfast");
+    }
+
     if (PATTERSONLUNCHCHECK == "1") {
-        await checkMenu("Neptune", "Lunch");
+        await checkMenu("Patterson", "Lunch");
     }
 
     if (PATTERSONDINNERCHECK == "1") {
@@ -260,22 +280,29 @@ client.once("clientReady", async () => {
     }
 
     scheduleDaily(async () => {
-     if (NEPTUNELUNCHCHECK == "1") {
-        await checkMenu("Neptune", "Lunch");
-    }
+        if (NEPTUNEBREAKFASTCHECK == "1") {
+            await checkMenu("Neptune", "Breakfast");
+        }
 
-    if (NEPTUNEDINNERHCHECK == "1") {
-        await checkMenu("Neptune", "Dinner");
-    }
+        if (NEPTUNELUNCHCHECK == "1") {
+            await checkMenu("Neptune", "Lunch");
+        }
 
-    if (PATTERSONLUNCHCHECK == "1") {
-        await checkMenu("Neptune", "Lunch");
-    }
+        if (NEPTUNEDINNERHCHECK == "1") {
+            await checkMenu("Neptune", "Dinner");
+        }
 
-    if (PATTERSONDINNERCHECK == "1") {
-        await checkMenu("Patterson", "Dinner");
-    }
-;
+        if (PATTERSONBREAKFASTCHECK == "1") {
+            await checkMenu("Patterson", "Breakfast");
+        }
+
+        if (PATTERSONLUNCHCHECK == "1") {
+            await checkMenu("Patterson", "Lunch");
+        }
+
+        if (PATTERSONDINNERCHECK == "1") {
+            await checkMenu("Patterson", "Dinner");
+        }
     });
 });
 
