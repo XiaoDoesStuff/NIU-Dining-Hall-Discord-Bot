@@ -10,5 +10,15 @@ A configurable Docker-based service that sends Discord notifications when NIU di
 
 # Config
 
+DINING_BOT_TOKEN=
+CHANNEL=
+CHECK_PATTERSON_BREAKFAST
+CHECK_PATTERSON_LUNCH
+CHECK_PATTERSON_DINNER
+CHECK_NEPTUNE_BREAKFAST
+CHECK_NEPTUNE_LUNCH
+CHECK_NEPTUNE_DINNER
+WHEN_TO_CHECK
+KEYWORDSTOCHECK
 
 npm install discord.js axios cheerio puppeteer
