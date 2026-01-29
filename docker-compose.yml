@@ -9,11 +9,15 @@ services:
     volumes:
       - /mnt/Docker_Apps/NIU-Dining-Hall-Discord-Bot:/app
     environment:
-      - DINING_BOT_TOKEN=
-      - CHANNEL= 
-      - CHECK_PATTERSON_LUNCH=
-      - CHECK_PATTERSON_DINNER=
-      - CHECK_NEPTUNE_LUNCH=
-      - CHECK_NEPTUNE_DINNER=
-      - WHEN_TO_CHECK=
-      - KEYWORDSTOCHECK=
+      - DINING_BOT_TOKEN=AbunchOFnumbersANDletters
+      - CHANNEL=12345678
+      - CHECK_PATTERSON_BREAKFAST=1
+      - CHECK_PATTERSON_LUNCH=1
+      - CHECK_PATTERSON_DINNER=1
+      - CHECK_NEPTUNE_BREAKFAST=1
+      - CHECK_NEPTUNE_LUNCH=1
+      - CHECK_NEPTUNE_DINNER=1
+      - WHEN_TO_CHECK=8
+      - KEYWORDSTOCHECK= ["food1", "food2"]
+      - TZ=America/Chicago
+
