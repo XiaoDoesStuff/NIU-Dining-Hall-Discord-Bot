@@ -1,6 +1,6 @@
 #!/bin/sh
 
 echo "NIU Dining Hall Discord Bot..."
-node Discord_Bot/index.js &
+node NIU-Dining-Bot &
 
 wait
