@@ -3,7 +3,7 @@ const axios = require("axios");
 const cheerio = require("cheerio");
 const puppeteer = require("puppeteer");
 let formattedDate;
-require(`dotenv`).config();
+require(`dotenv`).config({path: "./Config.env"});
 // ------------------------------------------------------------
 // Discord Client
 // ------------------------------------------------------------
