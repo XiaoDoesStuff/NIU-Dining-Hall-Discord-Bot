@@ -2,10 +2,14 @@
 A configurable Docker-based service that sends Discord notifications when NIU dining halls offer a specified food item.
 
 ## This Discord bot had AI involved in creation:
-- AI created the Docker container itself  
-- AI created the index.js this bot is based off  
-  - This bot is based on a Discord bot AI made to only check for shrimp  
-  - The functions and menus are now configurable  
+- AI created the Docker container itself:
+  -  docker-compose.yml, dockerfile, and start.sh were started by AI and later altered by hand  
+- AI created the index.js this bot is based off:
+  - This bot is based on a Discord bot AI made to only check for shrimp at Neptune during lunch
+- What was done by a human?
+  - Enviornmental varibles used to configure the bot were added.
+  - de-shrimpification of the bot this new one is based off of.
+  - 
 # Setup
 0. Prereqs:
     - Docker
