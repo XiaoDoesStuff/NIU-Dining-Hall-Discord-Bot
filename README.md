@@ -3,12 +3,16 @@ A configurable Docker-based service that sends Discord notifications when NIU di
 
 ## This Discord bot had AI involved in creation:
 - AI created the Docker container itself:
-  -  docker-compose.yml, dockerfile, and start.sh were started by AI and later altered by hand  
+  -  docker-compose.yml, dockerfile, and start.sh were started by AI and later altered by hand.  
 - AI created the index.js this bot is based off:
-  - This bot is based on a Discord bot AI made to only check for shrimp at Neptune during lunch
+  - This bot is based on a Discord bot AI made to only check for shrimp at Neptune during lunch.
+  - The orginal Shrimp Bot's puppeteer functionality was AI developed.
 - What was done by a human?
   - Enviornmental varibles used to configure the bot were added.
   - de-shrimpification of the bot this new one is based off of.
+- Why was AI used?
+  - I am not a coder. I am a Math Major. I like logic puzzles, but I do not know libraries, syntax, etc.
+  - My friends who could have helped seemed busy.
   - 
 # Setup
 0. Prereqs:
