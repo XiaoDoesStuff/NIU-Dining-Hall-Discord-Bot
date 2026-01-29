@@ -1,6 +1,6 @@
 FROM node:20-slim
 
-# Install Chromium dependencies
+# Install Chromium dependencies for puppeteer
 RUN apt-get update && apt-get install -y \
     chromium \
     ca-certificates \
