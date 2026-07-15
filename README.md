@@ -58,6 +58,7 @@ This bot can be setup and used either with Docker or directly on host.
 | CHECK_NEPTUNE_DINNER          | Set to 1 to check the Neptune dinner menu daily                          |
 | WHEN_TO_CHECK                 | Set to an hour integer in military time                                  |
 | KEYWORDSTOCHECK               | Set to a collection of keywords used to scan the menus (lowercase only)  |
+| FILTER                        | Set to 0 to disable filtering by keywords                                |
 
 ### Example Config.env configuration
 
@@ -74,4 +75,5 @@ This bot can be setup and used either with Docker or directly on host.
 | CHECK_NEPTUNE_DINNER         | 1   — Will check the Neptune Dinner daily                  |
 | WHEN_TO_CHECK                | 8   — Will scan the menu and alert you at 8 AM             |
 | KEYWORDSTOCHECK              | ["pizza", "fries"] — looks for pizza and fires in menus    |
+| FILTER                       | 1   - Will filter the menu with KEYWORDSTOCHECK            |
 
