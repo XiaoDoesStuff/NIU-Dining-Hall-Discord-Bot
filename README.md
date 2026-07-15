@@ -74,6 +74,6 @@ This bot can be setup and used either with Docker or directly on host.
 | CHECK_NEPTUNE_LUNCH          | 1   — Will check the Neptune Lunch daily                   |
 | CHECK_NEPTUNE_DINNER         | 1   — Will check the Neptune Dinner daily                  |
 | WHEN_TO_CHECK                | 8   — Will scan the menu and alert you at 8 AM             |
-| KEYWORDSTOCHECK              | ["pizza", "fries"] — looks for pizza and fires in menus    |
+| KEYWORDSTOCHECK              | ["pizza", "fries"] — looks for pizza and fries in menus    |
 | FILTER                       | 1   - Will filter the menu with KEYWORDSTOCHECK            |
 
