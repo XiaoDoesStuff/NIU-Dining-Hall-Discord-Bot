@@ -27,7 +27,7 @@ const PATTERSONLUNCHCHECK = process.env.CHECK_PATTERSON_LUNCH;
 const NEPTUNELUNCHCHECK = process.env.CHECK_NEPTUNE_LUNCH;
 const PATTERSONDINNERCHECK = process.env.CHECK_PATTERSON_DINNER;
 const NEPTUNEDINNERHCHECK = process.env.CHECK_NEPTUNE_DINNER;
-
+const FILTER = process.env.FILTER;
 let KEYWORDS = [];
 
 if (process.env.KEYWORDSTOCHECK) {
@@ -171,11 +171,20 @@ function detectKeywords(html, hall, meal) {
     console.log(items);
     console.log("====================");
 
-    return items.filter(item =>
-        KEYWORDS.some(keyword =>
-            item.toLowerCase().includes(keyword.toLowerCase())
+
+    if (FILTER == "1") {
+        return items.filter(item =>
+            KEYWORDS.some(keyword =>
+                item.toLowerCase().includes(keyword.toLowerCase())
         )
     );
+    }
+    else {
+        return items.map(item => item.toLowerCase());
+    }
+    
+
+    
 }
 
 // ------------------------------------------------------------
@@ -187,11 +196,11 @@ async function sendAlert(found, date, hall, meal) {
 
         await channel.send({
             content: [
-                "",
+                
                 `Menu Alert for **${hall}'s ${meal}**`,
                 `Date: **${date}**`,
-                `Matched items: ${found.join(", ")}`,
-                "..."
+                `====Detected items====\n${found.map(i => `• ${i.toLowerCase()}`).join("\n")}`,
+                "=============================",
             ].join("\n")
         });
 
